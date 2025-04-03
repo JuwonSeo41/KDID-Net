@@ -1,0 +1,87 @@
+---
+project: deblur_gan
+experiment_desc: fpn
+
+train:
+  files_a: D:/PycharmProjects/2_fold_datasets/PV/blurred/2nd/Train/*.jpg
+  files_b: D:/PycharmProjects/2_fold_datasets/PV/original/2nd/Train/*.jpg
+#  files_a: D:/PycharmProjects/2_fold_datasets/FP/blurred/1st/Train/*.jpg   # models.py 에서 class index 바꿔 주기
+#  files_b: D:/PycharmProjects/2_fold_datasets/FP/original/1st/Train/*.jpg
+#  files_a: &FILES_A ./dataset1/blur/*.png
+#  files_b: &FILES_B ./dataset1/sharp/*.png
+  size: &SIZE 128 # 256
+  crop: random
+  preload: &PRELOAD false
+  preload_size: &PRELOAD_SIZE 0
+  bounds: [0, .9]
+  scope: geometric
+  corrupt: &CORRUPT
+    - name: cutout
+      prob: 0.5
+      num_holes: 3
+      max_h_size: 25
+      max_w_size: 25
+    - name: jpeg
+      quality_lower: 70
+      quality_upper: 90
+    - name: motion_blur
+    - name: median_blur
+    - name: gamma
+    - name: rgb_shift
+    - name: hsv_shift
+    - name: sharpen
+
+val:
+  files_a: D:/PycharmProjects/2_fold_datasets/PV/blurred/2nd/Val/*.jpg
+  files_b: D:/PycharmProjects/2_fold_datasets/PV/original/2nd/Val/*.jpg
+#  files_a: D:/PycharmProjects/2_fold_datasets/FP/blurred/1st/Val/*.jpg
+#  files_b: D:/PycharmProjects/2_fold_datasets/FP/original/1st/Val/*.jpg
+  size: *SIZE
+  scope: geometric
+  crop: random
+  preload: *PRELOAD
+  preload_size: *PRELOAD_SIZE
+  bounds: [.9, 1]
+  corrupt: *CORRUPT
+
+phase: train
+warmup_num: 3
+model:
+  g_name: fpn_inception
+  blocks: 9
+  d_name: double_gan # may be no_gan, patch_gan, double_gan, multi_scale
+  d_layers: 1
+  content_loss: perceptual
+  adv_lambda: 0.001
+  disc_loss: wgan-gp
+  learn_residual: True
+  norm_layer: instance
+  dropout: True
+
+num_epochs: 700   # 500
+train_batches_per_epoch: 250    # 16 - 250, 8 - 500
+val_batches_per_epoch: 25
+batch_size: 16
+image_size: [256, 256]
+
+optimizer:    # for Teacher model
+  name: adam
+  lr_D: 0.00001
+  lr: 0.00005    # generator loss
+
+#optimizer_S:
+#  name: adam
+#  lr_D: 0.00001
+#  lr: 0.0001
+
+scheduler:
+  name: linear
+  start_epoch: 150
+  min_lr: 0.0000001
+
+alpha: 0.05   # weight for classification loss
+
+RESUME: ''
+#pre-weight: 'C:/Users/Seo/PycharmProjects/DeblurGANv2/FP-last_fpn-1st.h5'
+pre-weight: 'C:/Users/Seo/PycharmProjects/DeblurGANv2/last_fpn-2nd_fold.h5'
+#pre-weight: 'C:/Users/Seo/PycharmProjects/DeblurGANv2/best_fpn-1st_fold.h5'
