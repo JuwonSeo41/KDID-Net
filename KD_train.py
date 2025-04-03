@@ -53,27 +53,9 @@ class Trainer:
         self.adv_lambda = config['model']['adv_lambda']
         self.metric_counter = MetricCounter(config['experiment_desc'])
         self.warmup_epochs = config['warmup_num']
-        # self.alpha = config['alpha']
-
-        self.start_time = time.time()
-        self.epoch_times = []
 
     def train(self):
         self._init_params()
-
-        # MLP
-        # self.MLP1 = kd_losses.MLP(32, 32).to('cuda')
-        # self.MLP2 = kd_losses.MLP(192, 192).to('cuda')
-        # self.MLP3 = kd_losses.MLP(64, 64).to('cuda')
-        # self.optimizer_G_small.add_param_group({'params': [*self.MLP1.parameters(), *self.MLP2.parameters(),
-        #                                                    *self.MLP3.parameters()]})
-
-        # AttnFD
-        # self.Attn1 = kd_losses.AttnFD(32).to('cuda')
-        # self.Attn2 = kd_losses.AttnFD(192).to('cuda')
-        # self.Attn3 = kd_losses.AttnFD(64).to('cuda')
-        # self.optimizer_G_small.add_param_group({'params': [*self.Attn1.parameters(), *self.Attn2.parameters(),
-        #                                                    *self.Attn3.parameters()]})
 
         # Teacher weight(pretrained)
         weight_path = self.config['pre-weight']
@@ -91,11 +73,9 @@ class Trainer:
 
             self._run_epoch(epoch)
             self._validate(epoch)
-            # self.scheduler_G.step()
-            # self.scheduler_D.step()
+
             self.scheduler_G_small.step()
             self.scheduler_D_small.step()
-            # self.cla_scheduler.step()
 
             if self.metric_counter.update_best_model():
                 torch.save({
@@ -133,16 +113,6 @@ class Trainer:
             logging.debug("Experiment Name: %s, Epoch: %d, Loss: %s" % (
                 self.config['experiment_desc'], epoch, self.metric_counter.loss_message()))
 
-            epoch_duration = time.time() - epoch_start_time
-            self.epoch_times.append(epoch_duration)
-            avg_epoch_time = sum(self.epoch_times) / len(self.epoch_times)
-            remaining_epochs = self.config['num_epochs'] - (epoch + 1)
-            estimated_total_time = avg_epoch_time * self.config['num_epochs']
-            estimated_remaining_time = avg_epoch_time * remaining_epochs
-
-            print(f"Estimated Total Time: {estimated_total_time:.2f} seconds")
-            print(f"Estimated Time Remaining: {estimated_remaining_time:.2f} seconds")
-
     def _run_epoch(self, epoch):
         self.metric_counter.clear()
         for param_group in self.optimizer_G_small.param_groups:
@@ -150,19 +120,8 @@ class Trainer:
 
         epoch_size = self.config.get('train_batches_per_epoch') or len(self.train_dataset)
         tq = tqdm.tqdm(self.train_dataset, total=epoch_size)
-        # tq = tqdm.tqdm(self.train_dataset)
         tq.set_description('Epoch {}, lr {}'.format(epoch, lr))
         i = 0
-
-        # MLP
-        # self.MLP1.train()
-        # self.MLP2.train()
-        # self.MLP3.train()
-
-        # AttnKD
-        # self.Attn1.train()
-        # self.Attn2.train()
-        # self.Attn3.train()
 
         for data in tq:
             inputs, targets, target_class = self.model.get_input(data)
@@ -192,239 +151,8 @@ class Trainer:
             KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last          # case1 0.1 0.05
             # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last  # case2 no weight
 
-
-            # FTKD_1
-            # _, _, H, W = outputs_small.shape
-            #
-            # def FFT(x):
-            #     x = torch.fft.fft2(x)
-            #     x = torch.fft.fftshift(x)
-            #     magnitude = torch.abs(x).squeeze()
-            #     return magnitude
-            #
-            # def cal_distance(x):
-            #     _, _, H, W = x.shape
-            #     y, x = torch.meshgrid(torch.arange(H), torch.arange(W))  # 좌표 행렬 생성
-            #     center_y, center_x = H // 2, W // 2
-            #     distance = torch.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
-            #     return distance  # 각 좌표의 distance 행렬
-            #
-            # def extract_high_freq(x, threshold_ratio=0.1):
-            #     distance = cal_distance(x)
-            #     max_distance = distance.max()
-            #     threshold = max_distance * threshold_ratio
-            #     high_freq_mask = distance > threshold  # threshold 보다 크면 True, 아니면 False
-            #     x_high = x * high_freq_mask.cuda()  # magnitude * high_freq_mask
-            #     return x_high
-            #
-            # feature_last = FFT(feature_last)
-            # feature_small_last = FFT(feature_small_last)
-            # outputs = FFT(outputs)
-            # outputs_small_FFT = FFT(outputs_small)
-            #
-            # feature_last = extract_high_freq(feature_last)  # extract high freq
-            # feature_small_last = extract_high_freq(feature_small_last)
-            # outputs = extract_high_freq(outputs)
-            # outputs_small_high = extract_high_freq(outputs_small_FFT)
-            #
-            # KD_loss = torch.nn.functional.l1_loss(outputs_small_high, outputs)
-            #
-            # KD_feature_loss_first = torch.nn.functional.l1_loss(feature_first, feature_small_first)
-            # KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
-            # KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
-            # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + 0.2 * KD_feature_loss_last
-            #
-            # KD_total_loss = 0.5 * KD_loss + KD_feature_loss
-            # KD_total_loss = 0.1 * KD_total_loss
-
-
-            # FTKD_2
-            # def FFT(x):
-            #     x = torch.fft.fft2(x)
-            #     x = torch.fft.fftshift(x)
-            #     magnitude = torch.abs(x)
-            #     return magnitude
-            #
-            # feature_last = FFT(feature_last)
-            # feature_small_last = FFT(feature_small_last)
-            # outputs = FFT(outputs)
-            # outputs_small_mag = FFT(outputs_small)
-            #
-            # KD_loss = torch.nn.functional.l1_loss(outputs_small_mag, outputs)
-            #
-            # KD_feature_loss_first = torch.nn.functional.l1_loss(feature_first, feature_small_first)
-            # KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
-            # KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
-            # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-            # FTKD_3   phase, mag 분리해서
-            # def FFT_mag(x):
-            #     x = torch.fft.fft2(x)
-            #     x = torch.fft.fftshift(x)
-            #     magnitude = torch.abs(x)
-            #     return magnitude
-            #
-            # def FFT_phase(x):
-            #     x = torch.fft.fft2(x)
-            #     phase = torch.angle(x)
-            #     zero_mag = torch.ones_like(x)
-            #     phase_img = zero_mag * torch.exp(1j * phase)
-            #     phase_img = torch.fft.ifft2(phase_img).real
-            #     return phase_img
-            #
-            # feature_last_mag = FFT_mag(feature_last)        # mag
-            # feature_small_last_mag = FFT_mag(feature_small_last)
-            # outputs_mag = FFT_mag(outputs)
-            # outputs_small_mag = FFT_mag(outputs_small)
-            #
-            # feature_last_phase = FFT_phase(feature_last)        # phase
-            # feature_small_last_phase = FFT_phase(feature_small_last)
-            # outputs_phase = FFT_phase(outputs)
-            # outputs_small_phase = FFT_phase(outputs_small)
-            #
-            # KD_loss_mag = torch.nn.functional.l1_loss(outputs_small_mag, outputs_mag)       # output 비교
-            # KD_loss_phase = torch.nn.functional.l1_loss(outputs_small_phase, outputs_phase)
-            # KD_loss = KD_loss_mag + KD_loss_phase
-            #
-            # KD_feature_loss_first = torch.nn.functional.l1_loss(feature_first, feature_small_first)
-            # KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
-            #
-            # KD_feature_loss_last_mag = torch.nn.functional.l1_loss(feature_last_mag, feature_small_last_mag)        # feature last 비교
-            # KD_feature_loss_last_phase = torch.nn.functional.l1_loss(feature_last_phase, feature_small_last_phase)
-            # KD_feature_loss_last = KD_feature_loss_last_mag + KD_feature_loss_last_phase
-            #
-            # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-            # FFT 모두 적용
-            # feature_first = torch.fft.rfft2(feature_first)
-            # feature_small_first = torch.fft.rfft2(feature_small_first)
-            # feature_middle = torch.fft.rfft2(feature_middle)
-            # feature_small_middle = torch.fft.rfft2(feature_small_middle)
-            # feature_last = torch.fft.rfft2(feature_last)
-            # feature_small_last = torch.fft.rfft2(feature_small_last)
-            # outputs = torch.fft.rfft2(outputs)
-            # outputs_small_FFT = torch.fft.rfft2(outputs_small)
-            #
-            # KD_loss = torch.nn.functional.l1_loss(outputs_small_FFT, outputs)
-            #
-            # KD_feature_loss_first = torch.nn.functional.l1_loss(feature_first, feature_small_first)
-            # KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
-            # KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
-            #
-            # KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last
-
-            # FFT 미적용
-            # KD_loss = torch.nn.functional.l1_loss(outputs_small, outputs)
-            #
-            # KD_feature_loss_first = torch.nn.functional.l1_loss(feature_first, feature_small_first)
-            # KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
-            # KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
-            #
-            # KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last
-
-
-            # Logits
-            # Logits = kd_losses.logits.Logits()
-            # KD_loss = Logits(outputs_small, outputs)
-            #
-            # # Total loss
-            # loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + KD_loss
-            #
-            # self.metric_counter.add_losses(loss_G_small.item(), loss_content_small.item(), loss_adv_small.item(),
-            #                                KD_loss.item(), 0, 0, 0, loss_D_small)
-
-
-            # FitNet
-            # KD_loss = F.mse_loss(outputs_small, outputs)
-            #
-            # Hint = kd_losses.fitnet.Hint()
-            # KD_feature_loss_first = Hint(feature_small_first, feature_first)
-            # KD_feature_loss_middle = Hint(feature_small_middle, feature_middle)
-            # KD_feature_loss_last = Hint(feature_small_last, feature_last)
-            #
-            # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-            # Attention Transfer
-            # KD_loss = F.mse_loss(outputs_small, outputs)
-            #
-            # AT = kd_losses.at.AT(2)
-            # KD_feature_loss_first = AT(feature_small_first, feature_first)
-            # KD_feature_loss_middle = AT(feature_small_middle, feature_middle)
-            # KD_feature_loss_last = AT(feature_small_last, feature_last)
-            #
-            # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-            # Similarity Preserving
-            # KD_loss = F.mse_loss(outputs_small, outputs)
-            #
-            # SP = kd_losses.sp.SP()
-            # KD_feature_loss_first = SP(feature_small_first, feature_first)
-            # KD_feature_loss_middle = SP(feature_small_middle, feature_middle)
-            # KD_feature_loss_last = SP(feature_small_last, feature_last)
-            #
-            # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-            # Simple Recipe Distillation
-            # KD_loss = F.mse_loss(outputs_small, outputs) * 10
-            #
-            # SRD1 = kd_losses.SRD.DistillationLoss(32, 32)
-            # SRD2 = kd_losses.SRD.DistillationLoss(192, 192)
-            # SRD3 = kd_losses.SRD.DistillationLoss(64, 64)
-            # KD_feature_loss_first = SRD1(feature_small_first, feature_first)
-            # KD_feature_loss_middle = SRD2(feature_small_middle, feature_middle)
-            # KD_feature_loss_last = SRD3(feature_small_last, feature_last)
-            #
-            # KD_feature_loss = 0.1 * (KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last)
-
-            # CWD
-            # KD_loss = F.mse_loss(outputs_small, outputs)
-
-            # cwd = kd_losses.CWD.CriterionCWD()
-            # KD_feature_loss_first = cwd(feature_small_first, feature_first)
-            # KD_feature_loss_middle = cwd(feature_small_middle, feature_middle)
-            # KD_feature_loss_last = cwd(feature_small_last, feature_last)
-
-            # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-            # MLP
-            # KD_loss = F.mse_loss(outputs_small, outputs)
-            #
-            # KD_feature_loss_first = self.MLP1(feature_small_first, feature_first)
-            # KD_feature_loss_middle = self.MLP2(feature_small_middle, feature_middle)
-            # KD_feature_loss_last = self.MLP3(feature_small_last, feature_last)
-            #
-            # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-            # AttnFD
-            # KD_loss = F.mse_loss(outputs_small, outputs)
-            #
-            # KD_feature_loss_first = self.Attn1(feature_small_first, feature_first)
-            # KD_feature_loss_middle = self.Attn2(feature_small_middle, feature_middle)
-            # KD_feature_loss_last = self.Attn3(feature_small_last, feature_last)
-            #
-            # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-            # WKD
-            # wkd = kd_losses.WKD()
-            # KD_loss = wkd(outputs_small, outputs)
-            # # Total loss
-            # loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + KD_loss
-            #
-            # self.metric_counter.add_losses(loss_G_small.item(), loss_content_small.item(), loss_adv_small.item(),
-            #                                KD_loss.item(), 0, 0, 0, loss_D_small)
-
-
-
             # Total Loss
             loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + KD_loss + KD_feature_loss
-
-            # FTKD_1의 경우 Total Loss
-            # loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + 0.1 * KD_total_loss
 
             self.metric_counter.add_losses(loss_G_small.item(), loss_content_small.item(), loss_adv_small.item(),
                                            KD_loss.item(), KD_feature_loss_first.item(),
@@ -445,7 +173,6 @@ class Trainer:
 
         tq.close()
         print("\nloss_content :", loss_content_small)
-        # print("self.adv_lambda * loss_adv :", self.adv_lambda * loss_adv_small)
         print("KD feature 1", KD_feature_loss_first)
         print("KD feature 2", KD_feature_loss_middle)
         print("KD feature 3", KD_feature_loss_last)
@@ -456,27 +183,14 @@ class Trainer:
         self.metric_counter.clear()
         epoch_size = self.config.get('val_batches_per_epoch') or len(self.val_dataset)
         tq = tqdm.tqdm(self.val_dataset, total=epoch_size)
-        # tq = tqdm.tqdm(self.val_dataset)
         tq.set_description('Validation')
         i = 0
-
-        # MLP
-        # self.MLP1.eval()
-        # self.MLP2.eval()
-        # self.MLP3.eval()
-
-        # AttnFD
-        # self.Attn1.eval()
-        # self.Attn2.eval()
-        # self.Attn3.eval()
-
+        
         for data in tq:
             inputs, targets, target_class = self.model.get_input(data)
             with torch.no_grad():
                 outputs, logits, feature_first, feature_middle, feature_last = self.netG(inputs)
                 outputs_small, feature_small_first, feature_small_middle, feature_small_last = self.netG_small(inputs)
-
-                # cla_loss = self.cla_loss(logits, target_class)
 
                 loss_content_small = self.criterionG(outputs_small, targets)
                 loss_adv_small = self.adv_trainer_small.loss_g(outputs_small, targets)
@@ -497,240 +211,8 @@ class Trainer:
                 KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last          # case1 0.1 0.05
                 # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last  # case2 no weight
 
-
-                # FTKD_1 임계값 0.1
-                # _, _, H, W = outputs_small.shape
-                #
-                # def FFT(x):
-                #     x = torch.fft.fft2(x)
-                #     x = torch.fft.fftshift(x)
-                #     magnitude = torch.abs(x).squeeze()
-                #     return magnitude
-                #
-                # def cal_distance(x):
-                #     _, _, H, W = x.shape
-                #     y, x = torch.meshgrid(torch.arange(H), torch.arange(W))  # 좌표 행렬 생성
-                #     center_y, center_x = H // 2, W // 2
-                #     distance = torch.sqrt((x - center_x) ** 2 + (y - center_y) ** 2)
-                #     return distance  # 각 좌표의 distance 행렬
-                #
-                # def extract_high_freq(x, threshold_ratio=0.1):
-                #     distance = cal_distance(x)
-                #     max_distance = distance.max()
-                #     threshold = max_distance * threshold_ratio
-                #     high_freq_mask = distance > threshold  # threshold 보다 크면 True, 아니면 False
-                #     x_high = x * high_freq_mask.cuda()  # magnitude * high_freq_mask
-                #     return x_high
-                #
-                # feature_last = FFT(feature_last)
-                # feature_small_last = FFT(feature_small_last)
-                # outputs = FFT(outputs)
-                # outputs_small_FFT = FFT(outputs_small)
-                #
-                # feature_last = extract_high_freq(feature_last)  # extract high freq
-                # feature_small_last = extract_high_freq(feature_small_last)
-                # outputs = extract_high_freq(outputs)
-                # outputs_small_high = extract_high_freq(outputs_small_FFT)
-                #
-                # KD_loss = torch.nn.functional.l1_loss(outputs_small_high, outputs)
-                #
-                # KD_feature_loss_first = torch.nn.functional.l1_loss(feature_first, feature_small_first)
-                # KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
-                # KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
-                # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + 0.2 * KD_feature_loss_last
-                #
-                # KD_total_loss = 0.5 * KD_loss + KD_feature_loss
-                # KD_total_loss = 0.1 * KD_total_loss
-
-                # FTKD_2
-                # def FFT(x):
-                #     x = torch.fft.fft2(x)
-                #     x = torch.fft.fftshift(x)
-                #     magnitude = torch.abs(x)
-                #     return magnitude
-                #
-                # feature_last = FFT(feature_last)
-                # feature_small_last = FFT(feature_small_last)
-                # outputs = FFT(outputs)
-                # outputs_small_mag = FFT(outputs_small)
-                #
-                # KD_loss = torch.nn.functional.l1_loss(outputs_small_mag, outputs)
-                #
-                # KD_feature_loss_first = torch.nn.functional.l1_loss(feature_first, feature_small_first)
-                # KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
-                # KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
-                # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-                # FTKD_3   phase, mag 분리해서
-                # def FFT_mag(x):
-                #     x = torch.fft.fft2(x)
-                #     x = torch.fft.fftshift(x)
-                #     magnitude = torch.abs(x)
-                #     return magnitude
-                #
-                # def FFT_phase(x):
-                #     x = torch.fft.fft2(x)
-                #     phase = torch.angle(x)
-                #     zero_mag = torch.ones_like(x)
-                #     phase_img = zero_mag * torch.exp(1j * phase)
-                #     phase_img = torch.fft.ifft2(phase_img).real
-                #     return phase_img
-                #
-                # feature_last_mag = FFT_mag(feature_last)        # mag
-                # feature_small_last_mag = FFT_mag(feature_small_last)
-                # outputs_mag = FFT_mag(outputs)
-                # outputs_small_mag = FFT_mag(outputs_small)
-                #
-                # feature_last_phase = FFT_phase(feature_last)        # phase
-                # feature_small_last_phase = FFT_phase(feature_small_last)
-                # outputs_phase = FFT_phase(outputs)
-                # outputs_small_phase = FFT_phase(outputs_small)
-                #
-                # KD_loss_mag = torch.nn.functional.l1_loss(outputs_small_mag, outputs_mag)       # output 비교
-                # KD_loss_phase = torch.nn.functional.l1_loss(outputs_small_phase, outputs_phase)
-                # KD_loss = KD_loss_mag + KD_loss_phase
-                #
-                # KD_feature_loss_first = torch.nn.functional.l1_loss(feature_first, feature_small_first)
-                # KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
-                #
-                # KD_feature_loss_last_mag = torch.nn.functional.l1_loss(feature_last_mag, feature_small_last_mag)        # feature last 비교
-                # KD_feature_loss_last_phase = torch.nn.functional.l1_loss(feature_last_phase, feature_small_last_phase)
-                # KD_feature_loss_last = KD_feature_loss_last_mag + KD_feature_loss_last_phase
-                #
-                # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-                # FFT 모두 적용
-                # feature_first = torch.fft.rfft2(feature_first)
-                # feature_small_first = torch.fft.rfft2(feature_small_first)
-                # feature_middle = torch.fft.rfft2(feature_middle)
-                # feature_small_middle = torch.fft.rfft2(feature_small_middle)
-                # feature_last = torch.fft.rfft2(feature_last)
-                # feature_small_last = torch.fft.rfft2(feature_small_last)
-                # outputs = torch.fft.rfft2(outputs)
-                # outputs_small_FFT = torch.fft.rfft2(outputs_small)
-                #
-                # KD_loss = torch.nn.functional.l1_loss(outputs_small_FFT, outputs)
-                #
-                # KD_feature_loss_first = torch.nn.functional.l1_loss(feature_first, feature_small_first)
-                # KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
-                # KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
-                #
-                # KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last
-
-                # FFT 미적용
-                # KD_loss = torch.nn.functional.l1_loss(outputs_small, outputs)
-                #
-                # KD_feature_loss_first = torch.nn.functional.l1_loss(feature_first, feature_small_first)
-                # KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
-                # KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
-                #
-                # KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last
-
-
-                # Logits
-                # Logits = kd_losses.logits.Logits()
-                # KD_loss = Logits(outputs_small, outputs)
-                #
-                # # Total loss
-                # loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + KD_loss
-                #
-                # self.metric_counter.add_losses(loss_G_small.item(), loss_content_small.item(), loss_adv_small.item(),
-                #                                KD_loss.item(), 0, 0, 0)
-
-
-                # FitNet
-                # KD_loss = F.mse_loss(outputs_small, outputs)
-                #
-                # Hint = kd_losses.fitnet.Hint()
-                # KD_feature_loss_first = Hint(feature_small_first, feature_first)
-                # KD_feature_loss_middle = Hint(feature_small_middle, feature_middle)
-                # KD_feature_loss_last = Hint(feature_small_last, feature_last)
-                #
-                # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-                # Attention Transfer
-                # KD_loss = F.mse_loss(outputs_small, outputs)
-                #
-                # AT = kd_losses.at.AT(2)
-                # KD_feature_loss_first = AT(feature_small_first, feature_first)
-                # KD_feature_loss_middle = AT(feature_small_middle, feature_middle)
-                # KD_feature_loss_last = AT(feature_small_last, feature_last)
-                #
-                # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-                # Similarity Preserving
-                # KD_loss = F.mse_loss(outputs_small, outputs)
-                #
-                # SP = kd_losses.sp.SP()
-                # KD_feature_loss_first = SP(feature_small_first, feature_first)
-                # KD_feature_loss_middle = SP(feature_small_middle, feature_middle)
-                # KD_feature_loss_last = SP(feature_small_last, feature_last)
-                #
-                # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-                # Simple Recipe Distillation
-                # KD_loss = F.mse_loss(outputs_small, outputs) * 10
-                #
-                # SRD1 = kd_losses.SRD.DistillationLoss(32, 32)
-                # SRD2 = kd_losses.SRD.DistillationLoss(192, 192)
-                # SRD3 = kd_losses.SRD.DistillationLoss(64, 64)
-                # KD_feature_loss_first = SRD1(feature_small_first, feature_first)
-                # KD_feature_loss_middle = SRD2(feature_small_middle, feature_middle)
-                # KD_feature_loss_last = SRD3(feature_small_last, feature_last)
-                #
-                # KD_feature_loss = 0.1 * (KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last)
-
-
-                # CWD
-                # KD_loss = F.mse_loss(outputs_small, outputs)
-
-                # cwd = kd_losses.CWD.CriterionCWD()
-                # KD_feature_loss_first = cwd(feature_small_first, feature_first)
-                # KD_feature_loss_middle = cwd(feature_small_middle, feature_middle)
-                # KD_feature_loss_last = cwd(feature_small_last, feature_last)
-
-                # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-                # MLP
-                # KD_loss = F.mse_loss(outputs_small, outputs)
-                #
-                # KD_feature_loss_first = self.MLP1(feature_small_first, feature_first)
-                # KD_feature_loss_middle = self.MLP2(feature_small_middle, feature_middle)
-                # KD_feature_loss_last = self.MLP3(feature_small_last, feature_last)
-                #
-                # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-                # AttnFD
-                # KD_loss = F.mse_loss(outputs_small, outputs)
-                #
-                # KD_feature_loss_first = self.Attn1(feature_small_first, feature_first)
-                # KD_feature_loss_middle = self.Attn2(feature_small_middle, feature_middle)
-                # KD_feature_loss_last = self.Attn3(feature_small_last, feature_last)
-                #
-                # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last
-
-
-                # WKD
-                # wkd = kd_losses.WKD()
-                # KD_loss = wkd(outputs_small, outputs)
-                # # Total loss
-                # loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + KD_loss
-                #
-                # self.metric_counter.add_losses(loss_G_small.item(), loss_content_small.item(), loss_adv_small.item(),
-                #                                KD_loss.item(), 0, 0, 0)
-
-
             # Total Loss
             loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + KD_loss + KD_feature_loss
-
-            # FTKD_1, 2의 경우 Total Loss
-            # loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + 0.1 * KD_total_loss
 
             self.metric_counter.add_losses(loss_G_small.item(), loss_content_small.item(), loss_adv_small.item(),
                                            KD_loss.item(), KD_feature_loss_first.item(),
@@ -759,8 +241,6 @@ class Trainer:
         self.scheduler_G_small.load_state_dict(checkpoint['scheduler_G'])
         self.optimizer_D_small.load_state_dict(checkpoint['optimizer_D'])
         self.scheduler_D_small.load_state_dict(checkpoint['scheduler_D'])
-        # self.cla_optimizer.load_state_dict(checkpoint['optimizer_cla'])
-        # self.cla_scheduler.load_state_dict(checkpoint['scheduler_cla'])
 
     def _update_d(self, outputs, targets):
         if self.config['model']['d_name'] == 'no_gan':
@@ -824,7 +304,7 @@ class Trainer:
 
     def _init_params(self):
         self.criterionG, criterionD = get_loss(self.config['model'])
-        self.netG, _ = get_nets(self.config['model'])    # fpn_inception, double_gan
+        self.netG, _ = get_nets(self.config['model'])
         self.netG_small, self.netD_small = get_nets_small((self.config['model']))
         self.netG.cuda()
         self.netG_small.cuda()
