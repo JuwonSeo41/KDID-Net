@@ -1,0 +1,55 @@
+ C 드라이브의 볼륨에는 이름이 없습니다.
+ 볼륨 일련 번호: DA60-CFDA
+
+ C:\Users\Seo\PycharmProjects\DeblurGANv2 디렉터리
+
+
+ C:\Users\Seo\PycharmProjects\DeblurGANv2 디렉터리
+
+2024-08-14  오후 02:25    <DIR>          .
+2024-08-14  오후 02:25    <DIR>          ..
+2024-07-15  오후 05:47                56 .gitignore
+2024-08-14  오후 01:41    <DIR>          .idea
+2024-07-15  오후 05:47             2,776 adversarial_trainer.py
+2024-07-15  오후 05:47             2,532 aug.py
+2024-07-29  오후 05:09    <DIR>          config
+2024-08-11  오후 02:29             5,481 dataset.py
+2024-07-15  오후 05:47    <DIR>          doc_images
+2024-08-14  오후 02:21    <DIR>          fpn
+2024-07-15  오후 05:47             3,692 LICENSE
+2024-08-13  오후 04:47             2,224 metric_counter.py
+2024-08-12  오후 01:04    <DIR>          models
+2024-07-15  오후 05:47             2,994 picture_to_video.py
+2024-08-13  오후 05:16             5,236 predict.py
+2024-07-15  오후 05:47             5,726 README.md
+2024-07-15  오후 05:47               205 requirements.txt
+2024-07-15  오후 05:47             1,989 schedulers.py
+2024-08-14  오후 02:26                 0 tensorboard
+2024-07-15  오후 05:47                21 test.py
+2024-07-15  오후 05:47                60 test.sh
+2024-07-15  오후 05:47               588 test_aug.py
+2024-07-15  오후 05:47               345 test_batchsize.py
+2024-07-15  오후 05:47             2,770 test_dataset.py
+2024-07-15  오후 05:47    <DIR>          test_img
+2024-07-15  오후 05:47             2,766 test_metrics.py
+2024-08-14  오후 01:41             9,817 train.py
+2024-07-15  오후 06:26    <DIR>          util
+2024-08-12  오후 06:02    <DIR>          __pycache__
+
+ C:\Users\Seo\PycharmProjects\DeblurGANv2 디렉터리
+
+              19개 파일              49,278 바이트
+              10개 디렉터리  299,882,491,904 바이트 남음
+
+ D 드라이브의 볼륨: 새 볼륨
+ 볼륨 일련 번호: 3E87-2842
+
+ D:\PycharmProjects\DeblurGANv2\train\ep300-patch128 디렉터리
+
+2024-08-14  오후 02:21    <DIR>          .
+2024-08-14  오후 02:21    <DIR>          ..
+2024-07-31  오후 03:53       244,670,999 best_fpn.h5
+2024-07-31  오후 08:13        55,295,972 events.out.tfevents.1722312918.DESKTOP-2UG15ON
+2024-07-31  오후 08:13       244,670,999 last_fpn.h5
+               3개 파일         544,637,970 바이트
+               2개 디렉터리  3,858,080,772,096 바이트 남음
