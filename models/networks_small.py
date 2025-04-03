@@ -262,7 +262,7 @@ class NLayerDiscriminator(nn.Module):
 
 
 def get_fullD(model_config):
-    model_d = NLayerDiscriminator(n_layers=1,
+    model_d = NLayerDiscriminator(n_layers=3,
                                   norm_layer=get_norm_layer(norm_type=model_config['norm_layer']),
                                   use_sigmoid=False)
     return model_d
