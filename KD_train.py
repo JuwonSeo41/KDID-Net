@@ -1,16 +1,11 @@
 import logging
-import os
 from functools import partial
-import time
-import kd_losses
 
 import cv2
-import pandas as pd
 import torch
 import torch.optim as optim
 import tqdm
 import yaml
-from joblib import cpu_count
 from torch.utils.data import DataLoader
 
 from adversarial_trainer import GANFactory
@@ -22,10 +17,7 @@ from models.networks import get_nets
 from models.networks_small import get_nets as get_nets_small
 from schedulers import LinearDecay, WarmRestart
 from fire import Fire
-import torch.nn as nn
-import matplotlib.pyplot as plt
 import numpy as np
-import torch.nn.functional as F
 import random
 import warnings
 
@@ -57,7 +49,7 @@ class Trainer:
     def train(self):
         self._init_params()
 
-        # Teacher weight(pretrained)
+        # Load teacher weight(pretrained)
         weight_path = self.config['pre-weight']
         pretrained = torch.load(weight_path)
         self.netG.module.unfreeze()
@@ -69,8 +61,7 @@ class Trainer:
             print('Start at %d epoch' % self.start_epoch)
 
         for epoch in range(self.start_epoch, self.config['num_epochs']):
-            epoch_start_time = time.time()
-
+            
             self._run_epoch(epoch)
             self._validate(epoch)
 
