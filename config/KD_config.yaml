@@ -3,8 +3,8 @@ project: deblur_gan
 experiment_desc: fpn
 
 train:
-  files_a: D:/PycharmProjects/2_fold_datasets/PV/blurred/2nd/Train/*.jpg
-  files_b: D:/PycharmProjects/2_fold_datasets/PV/original/2nd/Train/*.jpg
+  files_a: /content/2_fold_datasets/PV/blurred/1st/Train/*.jpg
+  files_b: /content/2_fold_datasets/PV/original/1st/Train/*.jpg
 #  files_a: D:/PycharmProjects/2_fold_datasets/FP/blurred/1st/Train/*.jpg   # models.py 에서 class index 바꿔 주기
 #  files_b: D:/PycharmProjects/2_fold_datasets/FP/original/1st/Train/*.jpg
 #  files_a: &FILES_A ./dataset1/blur/*.png
@@ -32,8 +32,8 @@ train:
     - name: sharpen
 
 val:
-  files_a: D:/PycharmProjects/2_fold_datasets/PV/blurred/2nd/Val/*.jpg
-  files_b: D:/PycharmProjects/2_fold_datasets/PV/original/2nd/Val/*.jpg
+  files_a: /content/2_fold_datasets/PV/blurred/1st/Val/*.jpg
+  files_b: /content/2_fold_datasets/PV/original/1st/Val/*.jpg
 #  files_a: D:/PycharmProjects/2_fold_datasets/FP/blurred/1st/Val/*.jpg
 #  files_b: D:/PycharmProjects/2_fold_datasets/FP/original/1st/Val/*.jpg
   size: *SIZE
@@ -50,7 +50,7 @@ model:
   g_name: fpn_inception
   blocks: 9
   d_name: double_gan # may be no_gan, patch_gan, double_gan, multi_scale
-  d_layers: 1
+  d_layers: 3
   content_loss: perceptual
   adv_lambda: 0.001
   disc_loss: wgan-gp
@@ -66,13 +66,8 @@ image_size: [256, 256]
 
 optimizer:    # for Teacher model
   name: adam
-  lr_D: 0.00001
-  lr: 0.00005    # generator loss
-
-#optimizer_S:
-#  name: adam
-#  lr_D: 0.00001
-#  lr: 0.0001
+  lr_D: 0.00001  # discriminator
+  lr: 0.00005    # generator
 
 scheduler:
   name: linear
@@ -82,6 +77,6 @@ scheduler:
 alpha: 0.05   # weight for classification loss
 
 RESUME: ''
-#pre-weight: 'C:/Users/Seo/PycharmProjects/DeblurGANv2/FP-last_fpn-1st.h5'
-pre-weight: 'C:/Users/Seo/PycharmProjects/DeblurGANv2/last_fpn-2nd_fold.h5'
-#pre-weight: 'C:/Users/Seo/PycharmProjects/DeblurGANv2/best_fpn-1st_fold.h5'
+#pre-weight: '/content/drive/MyDrive/FP-last_fpn-1st.h5'
+# pre-weight: '/content/drive/MyDrive/last_fpn-2nd_fold.h5'
+pre-weight: '/content/drive/MyDrive/best_fpn-1st_fold.h5'
