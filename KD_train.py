@@ -6,6 +6,7 @@ import torch
 import torch.optim as optim
 import tqdm
 import yaml
+import os
 from torch.utils.data import DataLoader
 
 from adversarial_trainer import GANFactory
