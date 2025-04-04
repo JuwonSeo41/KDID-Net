@@ -46,7 +46,7 @@ class Trainer:
         self.adv_lambda = config['model']['adv_lambda']
         self.save_dir = self.config['save_dir']
         os.makedirs(self.save_dir, exist_ok=True)
-        self.metric_counter = MetricCounter(config['experiment_desc'], self.save_dir)
+        self.metric_counter = MetricCounter(/content/drive/MyDrive/Colab Notebooks/KDID-Net/weights0.050.05-1st, self.save_dir)
         self.warmup_epochs = config['warmup_num']
 
     def train(self):
