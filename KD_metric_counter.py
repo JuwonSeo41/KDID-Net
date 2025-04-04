@@ -9,9 +9,9 @@ WINDOW_SIZE = 100
 
 
 class MetricCounter:
-    def __init__(self, exp_name, save_dir):
-        self.writer = SummaryWriter(exp_name)
-        logging.basicConfig(filename=os.path.join(save_dir, '{}.log'.format(exp_name)), level=logging.DEBUG)
+    def __init__(self, save_dir):
+        self.writer = SummaryWriter(save_dir)
+        logging.basicConfig(filename='{}.log'.format(save_dir), level=logging.DEBUG)
         self.metrics = defaultdict(list)
         self.images = defaultdict(list)
         self.best_metric = 0
