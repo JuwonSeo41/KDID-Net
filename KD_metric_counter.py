@@ -2,6 +2,7 @@ import logging
 from collections import defaultdict
 
 import numpy as np
+import os
 from tensorboardX import SummaryWriter
 
 WINDOW_SIZE = 100
