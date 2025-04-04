@@ -1,6 +1,6 @@
 ---
 project: deblur_gan
-experiment_desc: /content/drive/MyDrive/Colab Notebooks/KDID-Net/weights0.050.05-1st
+experiment_desc: fpn
 
 train:
   files_a: /content/2_fold_datasets/PV/blurred/1st/Train/*.jpg
