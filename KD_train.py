@@ -139,8 +139,9 @@ class Trainer:
             KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
             KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
 
-            KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last          # case1 0.1 0.05
+            # KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last          # case1 0.1 0.05
             # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last  # case2 no weight
+            KD_feature_loss = 0.05 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last # 0.05 0.05
 
             # Total Loss
             loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + KD_loss + KD_feature_loss
@@ -199,8 +200,9 @@ class Trainer:
                 KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
                 KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
 
-                KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last          # case1 0.1 0.05
+                # KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last          # case1 0.1 0.05
                 # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last  # case2 no weight
+                KD_feature_loss = 0.05 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last # 0.05 0.05
 
             # Total Loss
             loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + KD_loss + KD_feature_loss
