@@ -43,7 +43,9 @@ class Trainer:
         self.train_dataset = train
         self.val_dataset = val
         self.adv_lambda = config['model']['adv_lambda']
-        self.metric_counter = MetricCounter(config['experiment_desc'])
+        self.save_dir = self.config['save_dir']
+        os.makedirs(self.save_dir, exist_ok=True)
+        self.metric_counter = MetricCounter(config['experiment_desc'], self.save_dir)
         self.warmup_epochs = config['warmup_num']
 
     def train(self):
@@ -78,7 +80,7 @@ class Trainer:
                     'scheduler_G': self.scheduler_G_small.state_dict(),
                     'optimizer_D': self.optimizer_D_small.state_dict(),
                     'scheduler_D': self.scheduler_D_small.state_dict()
-                }, 'best_{}_small.h5'.format(self.config['experiment_desc']))
+                }, os.path.join(self.save_dir, 'best_{}_small.h5'.format(self.config['experiment_desc'])))
             if (epoch+1) % 100 == 0:
                 torch.save({
                     'model': self.netG_small.state_dict(),
@@ -89,7 +91,7 @@ class Trainer:
                     'scheduler_G': self.scheduler_G_small.state_dict(),
                     'optimizer_D': self.optimizer_D_small.state_dict(),
                     'scheduler_D': self.scheduler_D_small.state_dict()
-                }, 'epoch_{}_small.h5'.format(epoch, self.config['experiment_desc']))
+                }, os.path.join(self.save_dir, 'epoch_{}_small.h5'.format(epoch, self.config['experiment_desc'])))
             torch.save({
                 'model': self.netG_small.state_dict(),
                 'model_D_patch': self.netD_small['patch'].state_dict(),
@@ -99,7 +101,7 @@ class Trainer:
                 'scheduler_G': self.scheduler_G_small.state_dict(),
                 'optimizer_D': self.optimizer_D_small.state_dict(),
                 'scheduler_D': self.scheduler_D_small.state_dict()
-            }, 'last_{}_small.h5'.format(self.config['experiment_desc']))
+            }, os.path.join(self.save_dir, 'last_{}_small.h5'.format(self.config['experiment_desc'])))
             print(self.metric_counter.loss_message())
             logging.debug("Experiment Name: %s, Epoch: %d, Loss: %s" % (
                 self.config['experiment_desc'], epoch, self.metric_counter.loss_message()))
