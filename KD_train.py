@@ -156,10 +156,12 @@ class Trainer:
             loss_G_small.backward()
             self.optimizer_G_small.step()
 
-            curr_psnr, curr_ssim, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
+            # curr_psnr, curr_ssim, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
+            curr_psnr, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
 
-            self.metric_counter.add_metrics(curr_psnr, curr_ssim)
-            tq.set_postfix(loss='PSNR={:.4f}; SSIM={:.4f}'.format(curr_psnr, curr_ssim))
+            # self.metric_counter.add_metrics(curr_psnr, curr_ssim)
+            self.metric_counter.add_metrics(curr_psnr)
+            tq.set_postfix(loss='PSNR={:.4f};'.format(curr_psnr))
             if not i:
                 self.metric_counter.add_image(img_for_vis, tag='train')
             i += 1
@@ -214,8 +216,11 @@ class Trainer:
                                            KD_loss.item(), KD_feature_loss_first.item(),
                                            KD_feature_loss_middle.item(), KD_feature_loss_last.item())
 
-            curr_psnr, curr_ssim, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
-            self.metric_counter.add_metrics(curr_psnr, curr_ssim)
+            # curr_psnr, curr_ssim, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
+            curr_psnr, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
+
+            # self.metric_counter.add_metrics(curr_psnr, curr_ssim)
+            self.metric_counter.add_metrics(curr_psnr)
             if not i:
                 self.metric_counter.add_image(img_for_vis, tag='val')
             i += 1
