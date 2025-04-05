@@ -76,7 +76,7 @@ scheduler:
 
 alpha: 0.05   # weight for classification loss
 
-RESUME: ''
+RESUME: '/content/drive/MyDrive/Colab Notebooks/KDID-Net/weights0.050.1-1st/last_fpn_small.h5'
 # pre-weight: '/content/drive/MyDrive/FP-last_fpn-1st.h5'
 # pre-weight: '/content/drive/MyDrive/last_fpn-2nd_fold.h5'
 pre-weight: '/content/drive/MyDrive/Colab Notebooks/best_fpn-1st_fold.h5'
