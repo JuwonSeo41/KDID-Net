@@ -3,7 +3,7 @@
 
 ## 📁 Datasets
 
-### [PlantVillage]  [(link)(https://drive.google.com/file/d/1JtOzI9LVij1rkU71AncbnR4uORQJEyJB/view?usp=sharing)]
+### [PlantVillage]  [[link](https://drive.google.com/file/d/1JtOzI9LVij1rkU71AncbnR4uORQJEyJB/view?usp=sharing)]
 ### [FieldPlant]    [(link)(https://drive.google.com/file/d/1XP1ECzXdsK9ntAt5IRPjSxpl6eiKrw0d/view?usp=sharing)]
 
 
