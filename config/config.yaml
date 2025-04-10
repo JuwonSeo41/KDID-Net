@@ -3,10 +3,8 @@ project: deblur_gan
 experiment_desc: fpn
 
 train:
-#  files_a: &FILES_A /datasets/my_dataset/**/*.jpg
-  #可以使用绝对路径
-  files_a: D:/PycharmProjects/2_fold_datasets/PV/blurred/2nd/Train/*.jpg
-  files_b: D:/PycharmProjects/2_fold_datasets/PV/original/2nd/Train/*.jpg
+  files_a: ./PV/blurred/1st/Train/*.jpg
+  files_b: ./PV/original/1st/Train/*.jpg
 #  files_a: &FILES_A ./dataset1/blur/*.png
 #  files_b: &FILES_B ./dataset1/sharp/*.png
   size: &SIZE 128
@@ -32,10 +30,8 @@ train:
     - name: sharpen
 
 val:
-  files_a: D:/PycharmProjects/2_fold_datasets/PV/blurred/2nd/Val/*.jpg
-  files_b: D:/PycharmProjects/2_fold_datasets/PV/original/2nd/Val/*.jpg
-#  files_a: &FILES_A
-#  files_b: &FILES_B
+  files_a: ./PV/blurred/1st/Val/*.jpg
+  files_b: ./PV/original/1st/Val/*.jpg
   size: *SIZE
   scope: geometric
   crop: random
@@ -58,22 +54,22 @@ model:
   norm_layer: instance
   dropout: True
 
-num_epochs: 1000
-train_batches_per_epoch: 1000
-val_batches_per_epoch: 100
-batch_size: 4
+num_epochs: 700
+train_batches_per_epoch: 250
+val_batches_per_epoch: 25
+batch_size: 16
 image_size: [256, 256]
 
 optimizer:
   name: adam
   lr_D: 0.00001
-  lr: 0.00005    # generator loss
+  lr: 0.00005
+  
 scheduler:
   name: linear
   start_epoch: 150
   min_lr: 0.0000001
 
-alpha: 0.05   # weight for classification loss
+alpha: 0.05   # weights for CGEL
 
 RESUME: ''
-#RESUME: 'C:/Users/Seo/PycharmProjects/DeblurGANv2/last_fpn.h5'
