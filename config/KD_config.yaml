@@ -5,10 +5,8 @@ experiment_desc: fpn
 train:
   files_a: /content/2_fold_datasets/PV/blurred/1st/Train/*.jpg
   files_b: /content/2_fold_datasets/PV/original/1st/Train/*.jpg
-#  files_a: D:/PycharmProjects/2_fold_datasets/FP/blurred/1st/Train/*.jpg   # models.py 에서 class index 바꿔 주기
-#  files_b: D:/PycharmProjects/2_fold_datasets/FP/original/1st/Train/*.jpg
-#  files_a: &FILES_A ./dataset1/blur/*.png
-#  files_b: &FILES_B ./dataset1/sharp/*.png
+#  files_a: &FILES_A ./dataset1/blur/*.jpg
+#  files_b: &FILES_B ./dataset1/sharp/*.jpg
   size: &SIZE 128 # 256
   crop: random
   preload: &PRELOAD false
@@ -34,8 +32,6 @@ train:
 val:
   files_a: /content/2_fold_datasets/PV/blurred/1st/Val/*.jpg
   files_b: /content/2_fold_datasets/PV/original/1st/Val/*.jpg
-#  files_a: D:/PycharmProjects/2_fold_datasets/FP/blurred/1st/Val/*.jpg
-#  files_b: D:/PycharmProjects/2_fold_datasets/FP/original/1st/Val/*.jpg
   size: *SIZE
   scope: geometric
   crop: random
@@ -58,13 +54,13 @@ model:
   norm_layer: instance
   dropout: True
 
-num_epochs: 700   # 500
-train_batches_per_epoch: 250    # 16 - 250, 8 - 500
+num_epochs: 700
+train_batches_per_epoch: 250
 val_batches_per_epoch: 25
 batch_size: 16
 image_size: [256, 256]
 
-optimizer:    # for Teacher model
+optimizer:
   name: adam
   lr_D: 0.00001  # discriminator
   lr: 0.00005    # generator
@@ -76,7 +72,7 @@ scheduler:
 
 alpha: 0.05   # weight for classification loss
 
-RESUME: '/content/drive/MyDrive/Colab Notebooks/KDID-Net/weights0.050.05-1st/last_fpn_small.h5'
+RESUME: ''
 # pre-weight: '/content/drive/MyDrive/FP-last_fpn-1st.h5'
 # pre-weight: '/content/drive/MyDrive/last_fpn-2nd_fold.h5'
 pre-weight: '/content/drive/MyDrive/Colab Notebooks/best_fpn-1st_fold.h5'
