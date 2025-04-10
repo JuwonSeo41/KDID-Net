@@ -130,7 +130,7 @@ class Trainer:
             loss_adv_small = self.adv_trainer_small.loss_g(outputs_small, targets)
 
 
-            # FTKD
+            # KD
             feature_last = torch.fft.rfft2(feature_last)
             feature_small_last = torch.fft.rfft2(feature_small_last)
             outputs = torch.fft.rfft2(outputs)
@@ -142,9 +142,8 @@ class Trainer:
             KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
             KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
 
-            # KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last          # case1 0.1 0.05
-            # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last  # case2 no weight
-            KD_feature_loss = 0.05 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last # 0.05 0.05
+            KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last
+
 
             # Total Loss
             loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + KD_loss + KD_feature_loss
@@ -156,12 +155,10 @@ class Trainer:
             loss_G_small.backward()
             self.optimizer_G_small.step()
 
-            # curr_psnr, curr_ssim, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
-            curr_psnr, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
+            curr_psnr, curr_ssim, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
 
-            # self.metric_counter.add_metrics(curr_psnr, curr_ssim)
-            self.metric_counter.add_metrics(curr_psnr)
-            tq.set_postfix(loss='PSNR={:.4f};'.format(curr_psnr))
+            self.metric_counter.add_metrics(curr_psnr, curr_ssim)
+            tq.set_postfix(loss='PSNR={:.4f}; SSIM={:.4f}'.format(curr_psnr, curr_ssim))
             if not i:
                 self.metric_counter.add_image(img_for_vis, tag='train')
             i += 1
@@ -169,11 +166,6 @@ class Trainer:
                 break
 
         tq.close()
-        print("\nloss_content :", loss_content_small)
-        print("KD feature 1", KD_feature_loss_first)
-        print("KD feature 2", KD_feature_loss_middle)
-        print("KD feature 3", KD_feature_loss_last)
-        print("KD_loss :", KD_loss)
         self.metric_counter.write_to_tensorboard(epoch)
 
     def _validate(self, epoch):
@@ -193,7 +185,7 @@ class Trainer:
                 loss_adv_small = self.adv_trainer_small.loss_g(outputs_small, targets)
 
 
-                # FTKD
+                # KD
                 feature_last = torch.fft.rfft2(feature_last)
                 feature_small_last = torch.fft.rfft2(feature_small_last)
                 outputs = torch.fft.rfft2(outputs)
@@ -205,9 +197,7 @@ class Trainer:
                 KD_feature_loss_middle = torch.nn.functional.l1_loss(feature_middle, feature_small_middle)
                 KD_feature_loss_last = torch.nn.functional.l1_loss(feature_last, feature_small_last)
 
-                # KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last          # case1 0.1 0.05
-                # KD_feature_loss = KD_feature_loss_first + KD_feature_loss_middle + KD_feature_loss_last  # case2 no weight
-                KD_feature_loss = 0.05 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last # 0.05 0.05
+                KD_feature_loss = 0.1 * KD_feature_loss_first + 0.05 * KD_feature_loss_middle + KD_feature_loss_last
 
             # Total Loss
             loss_G_small = loss_content_small + self.adv_lambda * loss_adv_small + KD_loss + KD_feature_loss
@@ -216,11 +206,9 @@ class Trainer:
                                            KD_loss.item(), KD_feature_loss_first.item(),
                                            KD_feature_loss_middle.item(), KD_feature_loss_last.item())
 
-            # curr_psnr, curr_ssim, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
-            curr_psnr, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
+            curr_psnr, curr_ssim, img_for_vis = self.model.get_images_and_metrics(inputs, outputs_small, targets)
 
-            # self.metric_counter.add_metrics(curr_psnr, curr_ssim)
-            self.metric_counter.add_metrics(curr_psnr)
+            self.metric_counter.add_metrics(curr_psnr, curr_ssim)
             if not i:
                 self.metric_counter.add_image(img_for_vis, tag='val')
             i += 1
