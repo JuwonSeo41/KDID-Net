@@ -3,8 +3,8 @@ project: deblur_gan
 experiment_desc: fpn
 
 train:
-  files_a: /content/2_fold_datasets/PV/blurred/1st/Train/*.jpg
-  files_b: /content/2_fold_datasets/PV/original/1st/Train/*.jpg
+  files_a: ./PV/blurred/1st/Train/*.jpg
+  files_b: ./PV/original/1st/Train/*.jpg
 #  files_a: &FILES_A ./dataset1/blur/*.jpg
 #  files_b: &FILES_B ./dataset1/sharp/*.jpg
   size: &SIZE 128 # 256
@@ -30,8 +30,8 @@ train:
     - name: sharpen
 
 val:
-  files_a: /content/2_fold_datasets/PV/blurred/1st/Val/*.jpg
-  files_b: /content/2_fold_datasets/PV/original/1st/Val/*.jpg
+  files_a: ./PV/blurred/1st/Val/*.jpg
+  files_b: ./PV/original/1st/Val/*.jpg
   size: *SIZE
   scope: geometric
   crop: random
@@ -70,10 +70,6 @@ scheduler:
   start_epoch: 150
   min_lr: 0.0000001
 
-alpha: 0.05   # weight for classification loss
-
 RESUME: ''
-# pre-weight: '/content/drive/MyDrive/FP-last_fpn-1st.h5'
-# pre-weight: '/content/drive/MyDrive/last_fpn-2nd_fold.h5'
-pre-weight: '/content/drive/MyDrive/Colab Notebooks/best_fpn-1st_fold.h5'
-save_dir: '/content/drive/MyDrive/Colab Notebooks/KDID-Net'
+pre-weight: './PV-fpn_t-1st.h5'
+save_dir: './KDID-Net'
