@@ -28,9 +28,9 @@ class MetricCounter:
                                (l_G, l_content, l_adv, l_KD, l_KD_1, l_KD_2, l_KD_3, l_D)):
             self.metrics[name].append(value)
 
-    # def add_metrics(self, psnr, ssim):
-    def add_metrics(self, psnr):
-        for name, value in zip(('PSNR',), (psnr,)):
+    def add_metrics(self, psnr, ssim):
+        for name, value in zip(('PSNR', 'SSIM'),
+                               (psnr, ssim)):
             self.metrics[name].append(value)
 
     def loss_message(self):
@@ -39,7 +39,7 @@ class MetricCounter:
 
     def write_to_tensorboard(self, epoch_num, validation=False):
         scalar_prefix = 'Validation' if validation else 'Train'
-        for tag in ('G_loss', 'D_loss', 'G_loss_adv', 'G_loss_content', 'KD_loss', 'KD_feature_first', 'KD_feature_middle', 'KD_feature_last', 'PSNR'):
+        for tag in ('G_loss', 'D_loss', 'G_loss_adv', 'G_loss_content', 'KD_loss', 'KD_feature_first', 'KD_feature_middle', 'KD_feature_last', 'SSIM', 'PSNR'):
             self.writer.add_scalar(f'{scalar_prefix}_{tag}', np.mean(self.metrics[tag]), global_step=epoch_num)
         for tag in self.images:
             imgs = self.images[tag]
