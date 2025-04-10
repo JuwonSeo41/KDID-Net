@@ -96,7 +96,7 @@ def process_video(pairs, predictor, output_dir):
 
 def main(img_pattern: str,
          mask_pattern: Optional[str] = None
-         weights_path='C:/Users/Seo/PycharmProjects/DeblurGANv2/last_fpn_small.h5',
+         weights_path='./last_fpn_small.h5',
          out_dir='submit/',
          side_by_side: bool = False,
          video: bool = False):
@@ -128,7 +128,7 @@ def main(img_pattern: str,
 
 def get_files():
     list=[]
-    for filepath,dirnames,filenames in os.walk('D:/PycharmProjects/2_fold_datasets/PV/blurred/1st/Test'):
+    for filepath,dirnames,filenames in os.walk('/content/2_fold_datasets/PV/blurred/1st/Test'):
         for filename in filenames:
             list.append(os.path.join(filepath, filename))
     return list
