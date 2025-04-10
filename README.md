@@ -1,5 +1,5 @@
 # KDID-Net
-## Code and resources for **KDID-Net**, a motion deblurring model for plant disease classification using knowledge distillation.
+Code and resources for **KDID-Net**, a motion deblurring model for plant disease classification using knowledge distillation.
 
 ## 📁 Datasets
 
