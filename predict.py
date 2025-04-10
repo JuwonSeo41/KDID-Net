@@ -12,7 +12,7 @@ import warnings
 
 from aug import get_normalize
 # from models.networks import get_generator
-from models.networks_small import get_generator     # 여기랑 postprocess랑 pred 부분 바꾸기
+from models.networks_small import get_generator
 
 
 class Predictor:
@@ -58,7 +58,6 @@ class Predictor:
     @staticmethod
     def _postprocess(x: torch.Tensor) -> np.ndarray:
         x, = x
-        # x, = x[0]   # feature 를 뽑느라 값이 여러 개가 됨
         x = x.detach().cpu().float().numpy()
         x = (np.transpose(x, (1, 2, 0)) + 1) / 2.0 * 255.0
         return x.astype('uint8')
@@ -96,8 +95,7 @@ def process_video(pairs, predictor, output_dir):
 
 
 def main(img_pattern: str,
-         mask_pattern: Optional[str] = None,
-         # weights_path='C:/Users/Seo/PycharmProjects/DeblurGANv2/best_fpn_small.h5',
+         mask_pattern: Optional[str] = None
          weights_path='C:/Users/Seo/PycharmProjects/DeblurGANv2/last_fpn_small.h5',
          out_dir='submit/',
          side_by_side: bool = False,
