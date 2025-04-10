@@ -45,9 +45,6 @@ class Trainer:
         self.metric_counter = MetricCounter(config['experiment_desc'])
         self.warmup_epochs = config['warmup_num']
 
-        self.start_time = time.time()
-        self.epoch_times = []
-
     def train(self):
         self._init_params()
         if self.config['RESUME'] != '':
@@ -79,7 +76,6 @@ class Trainer:
                     'model': self.netG.state_dict(),
                     'model_D_patch': self.netD['patch'].state_dict(),
                     'model_D_full': self.netD['full'].state_dict(),
-                    # 'model_D_patch': self.netD.module.state_dict(),
                     'epoch': epoch,
                     'optimizer_G': self.optimizer_G.state_dict(),
                     'scheduler_G': self.scheduler_G.state_dict(),
@@ -99,16 +95,6 @@ class Trainer:
             print(self.metric_counter.loss_message())
             logging.debug("Experiment Name: %s, Epoch: %d, Loss: %s" % (
                 self.config['experiment_desc'], epoch, self.metric_counter.loss_message()))
-
-            epoch_duration = time.time() - epoch_start_time
-            self.epoch_times.append(epoch_duration)
-            avg_epoch_time = sum(self.epoch_times) / len(self.epoch_times)
-            remaining_epochs = self.config['num_epochs'] - (epoch + 1)
-            estimated_total_time = avg_epoch_time * self.config['num_epochs']
-            estimated_remaining_time = avg_epoch_time * remaining_epochs
-
-            print(f"Estimated Total Time: {estimated_total_time:.2f} seconds")
-            print(f"Estimated Time Remaining: {estimated_remaining_time:.2f} seconds")
 
     def _run_epoch(self, epoch):
         self.metric_counter.clear()
@@ -157,15 +143,13 @@ class Trainer:
             with torch.no_grad():
                 outputs, *_ = self.netG(inputs)
 
-                # cla_loss = self.cla_loss(logits, target_class)
-
                 loss_content = self.criterionG(outputs, targets)
                 loss_adv = self.adv_trainer.loss_g(outputs, targets)
-            loss_G = loss_content + self.adv_lambda * loss_adv  #+ self.alpha * cla_loss
+            loss_G = loss_content + self.adv_lambda * loss_adv
 
             epoch_loss_G += loss_G.item()
 
-            self.metric_counter.add_losses(loss_G.item(), loss_content.item(), loss_adv.item())  # , cla_loss.item()
+            self.metric_counter.add_losses(loss_G.item(), loss_content.item(), loss_adv.item())
             curr_psnr, curr_ssim, img_for_vis = self.model.get_images_and_metrics(inputs, outputs, targets)
             self.metric_counter.add_metrics(curr_psnr, curr_ssim)
             if not i:
@@ -252,7 +236,7 @@ class Trainer:
 
     def _init_params(self):
         self.criterionG, criterionD = get_loss(self.config['model'])
-        self.netG, self.netD = get_nets(self.config['model'])    # fpn_inception, double_gan
+        self.netG, self.netD = get_nets(self.config['model'])
         self.netG.cuda()
         self.adv_trainer = self._get_adversarial_trainer(self.config['model']['d_name'], self.netD, criterionD)
         self.model = get_model(self.config['model'])
