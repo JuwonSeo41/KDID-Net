@@ -163,36 +163,15 @@ class FPN(nn.Module):
     def __init__(self, norm_layer, num_filters=256):
 
         super().__init__()
-        # self.inception = inceptionresnetv2(num_classes=1000, pretrained='imagenet')
-
-        # start at (4, 3, 128, 128)
-
-        # self.enc0 = self.inception.conv2d_1a
-        self.enc0 = BasicConv2d(3, 32, kernel_size=3, stride=2)     # (4, 32, 63, 63)
-
-        # self.enc1 = nn.Sequential(
-        #     self.inception.conv2d_2a,   # (4, 32, 61, 61)
-        #     self.inception.conv2d_2b,   # (4, 64, 61, 61)
-        #     self.inception.maxpool_3a,  # (4, 64, 30, 30)
-        # ) # 64
+        self.enc0 = BasicConv2d(3, 32, kernel_size=3, stride=2)
         self.enc1 = nn.Sequential(
-            BasicConv2d(32, 64, kernel_size=3, stride=1),    # (4, 64, 61, 61)
-            nn.MaxPool2d(3, stride=2)   # (4, 64, 30, 30)
+            BasicConv2d(32, 64, kernel_size=3, stride=1),
+            nn.MaxPool2d(3, stride=2)
         )
-        # self.enc2 = nn.Sequential(
-        #     self.inception.conv2d_3b,   # (4, 80, 30, 30)
-        #     self.inception.conv2d_4a,   # (4, 192, 28, 28)
-        #     self.inception.maxpool_5a,  # (4, 192, 13, 13)
-        # )  # 192
         self.enc2 = nn.Sequential(
-            BasicConv2d(64, 192, kernel_size=3, stride=1),   # (4, 192, 28, 28)
-            nn.MaxPool2d(3, stride=2)   # (4, 192, 13, 13)
+            BasicConv2d(64, 192, kernel_size=3, stride=1),
+            nn.MaxPool2d(3, stride=2)
         )
-        # self.enc3 = nn.Sequential(
-        #     self.inception.mixed_5b,
-        #     self.inception.repeat,
-        #     self.inception.mixed_6a,
-        # )   # 1088
         self.enc3 = nn.Sequential(
             Mixed_5b(),
             Block35(scale=0.17),
@@ -200,12 +179,8 @@ class FPN(nn.Module):
             Block35(scale=0.17),
             Block35(scale=0.17),
             Block35(scale=0.17),
-            Mixed_6a()                  # (4, 1088, 6, 6)
+            Mixed_6a()
         )
-        # self.enc4 = nn.Sequential(
-        #     self.inception.repeat_1,
-        #     self.inception.mixed_7a,
-        # ) #2080
         self.enc4 = nn.Sequential(
             Block17(scale=0.10),
             Block17(scale=0.10),
@@ -217,7 +192,7 @@ class FPN(nn.Module):
             Block17(scale=0.10),
             Block17(scale=0.10),
             Block17(scale=0.10),
-            Mixed_7a()                  # (4, 2080, 2, 2)
+            Mixed_7a()
         )
 
         self.td1 = nn.Sequential(nn.Conv2d(num_filters, num_filters, kernel_size=3, padding=1),
@@ -236,46 +211,38 @@ class FPN(nn.Module):
         self.lateral1 = nn.Conv2d(64, num_filters, kernel_size=1, bias=False)
         self.lateral0 = nn.Conv2d(32, num_filters // 2, kernel_size=1, bias=False)
 
-        # for param in self.inception.parameters():
-        #     param.requires_grad = False
-
-    # def unfreeze(self):
-        # for param in self.inception.parameters():
-        #     param.requires_grad = True
-
     def forward(self, x):
 
         # Bottom-up pathway, from ResNet
-        # x = (4, 3, 128, 128) -> (B, C, W, H)
-        enc0 = self.enc0(x) # enc0 = (4, 32, 63, 63)
+        enc0 = self.enc0(x)
 
-        enc1 = self.enc1(enc0) # 256 enc1 = (4, 64, 30, 30)
+        enc1 = self.enc1(enc0)
 
-        enc2 = self.enc2(enc1) # 512 enc2 = (4, 192, 13, 13)
+        enc2 = self.enc2(enc1)
 
-        enc3 = self.enc3(enc2) # 1024 enc3 = (4, 1088, 6, 6)
+        enc3 = self.enc3(enc2)
 
-        enc4 = self.enc4(enc3) # 2048 enc4 = (4, 2080, 2, 2)
+        enc4 = self.enc4(enc3)
 
         # Lateral connections
-        lateral4 = self.pad(self.lateral4(enc4))    # (4, 256, 4, 4)
+        lateral4 = self.pad(self.lateral4(enc4))
 
-        lateral3 = self.pad(self.lateral3(enc3))    # (4, 256, 8, 8)
+        lateral3 = self.pad(self.lateral3(enc3))
 
-        lateral2 = self.lateral2(enc2)              # (4, 256, 13, 13)
+        lateral2 = self.lateral2(enc2)
 
-        lateral1 = self.pad(self.lateral1(enc1))    # (4, 256, 32, 32)
+        lateral1 = self.pad(self.lateral1(enc1))
 
-        lateral0 = self.lateral0(enc0)              # (4, 128, 63, 63)
+        lateral0 = self.lateral0(enc0)
 
         # Top-down pathway
         pad = (1, 2, 1, 2)  # pad last dim by 1 on each side
         pad1 = (0, 1, 0, 1)
         map4 = lateral4
-        map3 = self.td1(lateral3 + nn.functional.upsample(map4, scale_factor=2, mode="nearest"))    # (4, 256, 8, 8)
-        map2 = self.td2(F.pad(lateral2, pad, "reflect") + nn.functional.upsample(map3, scale_factor=2, mode="nearest")) # (4, 256, 16, 16)
-        map1 = self.td3(lateral1 + nn.functional.upsample(map2, scale_factor=2, mode="nearest"))    # (4, 256, 32, 32)
-        return enc0, enc2, F.pad(lateral0, pad1, "reflect"), map1, map2, map3, map4   # F.pad() = map0 = (4, 128, 32, 32)
+        map3 = self.td1(lateral3 + nn.functional.upsample(map4, scale_factor=2, mode="nearest"))
+        map2 = self.td2(F.pad(lateral2, pad, "reflect") + nn.functional.upsample(map3, scale_factor=2, mode="nearest"))
+        map1 = self.td3(lateral1 + nn.functional.upsample(map2, scale_factor=2, mode="nearest"))
+        return enc0, enc2, F.pad(lateral0, pad1, "reflect"), map1, map2, map3, map4
 
 
 class FPNHead(nn.Module):
@@ -298,8 +265,6 @@ class FPNInception(nn.Module):
         # 1/4, 1/8, 1/16, 1/32 and `num_filters` filters for all feature maps.
         self.fpn = FPN(num_filters=num_filters_fpn, norm_layer=norm_layer)
 
-        # The segmentation heads on top of the FPN
-
         self.head1 = FPNHead(num_filters_fpn, num_filters)
         self.head2 = FPNHead(num_filters_fpn, num_filters)
         self.head3 = FPNHead(num_filters_fpn, num_filters)
@@ -319,35 +284,21 @@ class FPNInception(nn.Module):
 
         self.final = nn.Conv2d(num_filters // 2, output_ch, kernel_size=3, padding=1)
 
-        # Classification head 추가
-        # num_classes = 38
-        # self.classifier = nn.Sequential(
-        #     nn.Conv2d(2080, 512, kernel_size=1),
-        #     nn.ReLU(),
-        #     nn.Conv2d(512, num_classes, kernel_size=1)
-        # )
-        # self.GAP = nn.AdaptiveAvgPool2d(1)
-
     def forward(self, x):
         with torch.autograd.set_detect_anomaly(True):
             enc0, enc2, map0, map1, map2, map3, map4 = self.fpn(x)
+            
+            map4 = nn.functional.upsample(self.head4(map4), scale_factor=8, mode="nearest")
+            map3 = nn.functional.upsample(self.head3(map3), scale_factor=4, mode="nearest")
+            map2 = nn.functional.upsample(self.head2(map2), scale_factor=2, mode="nearest")
+            map1 = nn.functional.upsample(self.head1(map1), scale_factor=1, mode="nearest")
 
-            # Classification
-            # logits = self.classifier(enc4)
-            # logits = self.GAP(logits)
-            # logits = logits.view(logits.size(0), -1)  # Flatten
-                                                                                                # map0 = (4, 128, 64, 64)
-            map4 = nn.functional.upsample(self.head4(map4), scale_factor=8, mode="nearest")     # (4, 256, 4, 4) -> (4. 128, 32, 32)
-            map3 = nn.functional.upsample(self.head3(map3), scale_factor=4, mode="nearest")     # (4, 256, 8, 8) -> (4, 128, 32, 32)
-            map2 = nn.functional.upsample(self.head2(map2), scale_factor=2, mode="nearest")     # (4, 256, 16, 16) -> (4, 128, 32, 32)
-            map1 = nn.functional.upsample(self.head1(map1), scale_factor=1, mode="nearest")     # (4, 256, 32, 32) -> (4, 128, 32, 32)
+            smoothed = self.smooth(torch.cat([map4, map3, map2, map1], dim=1))
+            smoothed = nn.functional.upsample(smoothed, scale_factor=2, mode="nearest")
+            smoothed = self.smooth2(smoothed + map0)
+            smoothed = nn.functional.upsample(smoothed, scale_factor=2, mode="nearest")
 
-            smoothed = self.smooth(torch.cat([map4, map3, map2, map1], dim=1))      # concat = (4, 128x4, 32, 32) -> (4, 128, 32, 32)
-            smoothed = nn.functional.upsample(smoothed, scale_factor=2, mode="nearest")     # (4, 128, 32, 32) -> (4, 128, 64, 64)
-            smoothed = self.smooth2(smoothed + map0)    # s+m0 = (4, 128, 64, 64) -> (4, 64, 64, 64)
-            smoothed = nn.functional.upsample(smoothed, scale_factor=2, mode="nearest")     # (4, 64, 128, 128)
-
-            final = self.final(smoothed)    # (4, 3, 128, 128)
+            final = self.final(smoothed)
             res = torch.tanh(final) + x
 
         return torch.clamp(res, min=-1, max=1), enc0, enc2, smoothed
