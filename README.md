@@ -14,7 +14,7 @@ Code and resources for **KDID-Net**, a motion deblurring model for plant disease
 #### [FieldPlant]
 ##### 1st fold  [[link](https://drive.google.com/file/d/1cVYdmdWUDC1yRIn_VUSCc4do5EEFeb9I/view?usp=sharing)]  2nd fold  [[link](https://drive.google.com/file/d/1Txi31udu3UszKmRMJW6KPp5FNiwm4Hq6/view?usp=sharing)]
 
-### Training
+### 📌 Training
 Teacher
 ```python
 python train.py --config [config path]
@@ -30,7 +30,7 @@ With distill
 python KD_train.py --config [config path]
 ```
 
-### Experimental results
+### 📌 Experimental results
 comparison of deblurring results on PlantVillage datasets
 | Methods           | PSNR    | SSIM   | Accuracy | Precision | Recall  | F1 Score |
 |-------------------|---------|--------|----------|-----------|---------|----------|
