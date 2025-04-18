@@ -1,7 +1,6 @@
 import logging
 import os
 from functools import partial
-import time
 
 import cv2
 import torch
@@ -53,8 +52,6 @@ class Trainer:
             print('Start at %d epoch' % self.start_epoch)
 
         for epoch in range(self.start_epoch, self.config['num_epochs']):
-            epoch_start_time = time.time()
-
             self._run_epoch(epoch)
             self._validate(epoch)
             self.scheduler_G.step()
@@ -137,7 +134,6 @@ class Trainer:
         tq = tqdm.tqdm(self.val_dataset, total=epoch_size)
         tq.set_description('Validation')
         i = 0
-        epoch_loss_G = 0
         for data in tq:
             inputs, targets, target_class = self.model.get_input(data)
             with torch.no_grad():
@@ -146,8 +142,6 @@ class Trainer:
                 loss_content = self.criterionG(outputs, targets)
                 loss_adv = self.adv_trainer.loss_g(outputs, targets)
             loss_G = loss_content + self.adv_lambda * loss_adv
-
-            epoch_loss_G += loss_G.item()
 
             self.metric_counter.add_losses(loss_G.item(), loss_content.item(), loss_adv.item())
             curr_psnr, curr_ssim, img_for_vis = self.model.get_images_and_metrics(inputs, outputs, targets)
