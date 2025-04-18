@@ -46,7 +46,7 @@ comparison of deblurring results on PlantVillage datasets
 | **KDID-Net (proposed)** | 19.8182 | 0.3774 | 0.9432 | 0.8411 | 0.8174 | 0.8275 |
 
 
-comparison of kd results on PlantVillage datasets
+comparison of knowledge distillation results on PlantVillage datasets
 | Methods         | PSNR   | SSIM   | Accuracy | Precision | Recall | F1 Score |
 |----------------|--------|--------|----------|-----------|--------|----------|
 | Teacher        | 19.3997 | 0.3466 | 0.9485   | 0.8509    | 0.8290 | 0.8385   |
