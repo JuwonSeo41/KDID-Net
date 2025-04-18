@@ -155,7 +155,6 @@ class Trainer:
         tq = tqdm.tqdm(self.val_dataset, total=epoch_size)
         tq.set_description('Validation')
         i = 0
-        # epoch_loss_G = 0
         for data in tq:
             inputs, targets, target_class = self.model.get_input(data)
             with torch.no_grad():
