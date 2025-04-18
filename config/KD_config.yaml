@@ -7,7 +7,7 @@ train:
   files_b: ./PV/original/1st/Train/*.jpg
 #  files_a: &FILES_A ./dataset1/blur/*.jpg
 #  files_b: &FILES_B ./dataset1/sharp/*.jpg
-  size: &SIZE 128 # 256
+  size: &SIZE 128
   crop: random
   preload: &PRELOAD false
   preload_size: &PRELOAD_SIZE 0
