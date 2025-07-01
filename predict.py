@@ -95,7 +95,7 @@ def process_video(pairs, predictor, output_dir):
 
 
 def main(img_pattern: str,
-         mask_pattern: Optional[str] = None
+         mask_pattern: Optional[str] = None,
          weights_path='./last_fpn_small.h5',
          out_dir='submit/',
          side_by_side: bool = False,
