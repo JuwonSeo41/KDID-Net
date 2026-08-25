@@ -1,5 +1,6 @@
 ## KDID-Net
 Code and resources for **KDID-Net**, a motion deblurring model for plant disease classification using knowledge distillation.
+[[Paper](https://www.researchgate.net/publication/412325965_Knowledge_distillation-based_image_deblurring_network_for_plant_disease_classification)]
 
 ### 📁 Datasets
 
